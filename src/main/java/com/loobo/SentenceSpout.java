@@ -16,7 +16,7 @@ public class SentenceSpout extends BaseRichSpout {
             "my dog has fleas",
             "i like cold beverages",
             "the dog ate my homework",
-            "do not have a cow man",
+            "dont have a cow man",
             "i dont think i like fleas"
     };
 
