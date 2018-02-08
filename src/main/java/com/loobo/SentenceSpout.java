@@ -9,9 +9,13 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
 
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class SentenceSpout extends BaseRichSpout {
     private SpoutOutputCollector collector;
+    private ConcurrentMap<UUID, Values> pending;
     private String[] sentences = {
             "my dog has fleas",
             "i like cold beverages",
@@ -24,18 +28,30 @@ public class SentenceSpout extends BaseRichSpout {
 
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector spoutOutputCollector) {
         this.collector = spoutOutputCollector;
+        pending = new ConcurrentHashMap<UUID, Values>();
     }
 
     public void nextTuple() {
-        if (index < sentences.length) {
-            this.collector.emit(new Values(sentences[index]));
-            index++;
+        Values values = new Values(sentences[index]);
+        UUID msgId = UUID.randomUUID();
+        pending.put(msgId, values);
+        collector.emit(values, msgId);
+        index++;
+
+        if (index >= sentences.length) {
+            index = 0;
         }
-//
-//        if (index >= sentences.length) {
-//            index = 0;
-//        }
         Utils.waitForMillis(1);
+    }
+
+    @Override
+    public void ack(Object msgId) {
+        pending.remove(msgId);
+    }
+
+    @Override
+    public void fail(Object msgId) {
+        collector.emit(pending.get(msgId), msgId);
     }
 
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {

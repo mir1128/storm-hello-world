@@ -21,8 +21,9 @@ public class SplitSentenceBolt extends BaseRichBolt {
         String sentence = input.getStringByField("sentence");
         String[] words = sentence.split(" ");
         for (String word : words) {
-            collector.emit(new Values(word));
+            collector.emit(input, new Values(word));
         }
+        collector.ack(input);
     }
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
