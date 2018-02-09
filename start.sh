@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+docker run --net dockercomposestorm_default --link nimbus:nimbus -it --rm -v /Users/jieliu/Downloads/storm-hello-world/storm-hello-world/target/storm-hello-world-1.0-SNAPSHOT.jar:/storm-hello-world-1.0-SNAPSHOT.jar storm storm jar /storm-hello-world-1.0-SNAPSHOT.jar com.loobo.WordCountTopology word-count-topology
