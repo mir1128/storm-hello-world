@@ -3,6 +3,7 @@ package com.loobo;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 
@@ -13,7 +14,7 @@ public class WordCountTopology {
     private static final String REPORT_BOLT_ID = "report-bolt";
     private static final String TOPOLOGY_NAME = "word-count-topology";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         SentenceSpout spout = new SentenceSpout();
         SplitSentenceBolt splitBolt = new SplitSentenceBolt();
         WordCountBolt countBolt = new WordCountBolt();
@@ -30,13 +31,17 @@ public class WordCountTopology {
         builder.setBolt(REPORT_BOLT_ID, reportBolt).globalGrouping(COUNT_BOLT_ID);
 
         Config config = new Config();
-        LocalCluster cluster = new LocalCluster();
 
-        cluster.submitTopology(TOPOLOGY_NAME, config, builder.createTopology());
-
-        Utils.waitForSeconds(10);
-        cluster.killTopology(TOPOLOGY_NAME);
-        cluster.shutdown();
+        if (args.length == 0) {
+            LocalCluster cluster = new LocalCluster();
+            cluster.submitTopology(TOPOLOGY_NAME, config, builder.createTopology());
+            Utils.waitForSeconds(10);
+            cluster.killTopology(TOPOLOGY_NAME);
+            cluster.shutdown();
+        } else {
+            StormSubmitter.submitTopology(args[0], config, builder.createTopology());
+        }
     }
 }
+
 
